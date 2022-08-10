@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quizzler/Helpers/ButtonColor.dart';
 import 'package:quizzler/quiz_brain.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 void main() => runApp(Quizzler());
 
@@ -28,28 +29,59 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> {
   List<Widget> scoreKeeper = [];
+  var alertStyle = AlertStyle(
+    animationType: AnimationType.fromRight,
+    isCloseButton: false,
+    isOverlayTapDismiss: false,
+    descStyle: TextStyle(fontWeight: FontWeight.bold),
+    descTextAlign: TextAlign.start,
+    animationDuration: Duration(milliseconds: 400),
+    alertBorder: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(0.0),
+      side: BorderSide(
+        color: Colors.grey,
+      ),
+    ),
+    titleStyle: TextStyle(
+      color: Colors.red,
+    ),
+    alertAlignment: Alignment.center,
+  );
   QuizBrain quizBrain = QuizBrain();
   void updateQuestionNumber(bool answer) {
     // quizBrain.actualQuestions[questionNumber].questionAnswer = answer;
-    bool correctAnswer = quizBrain.getQuestionAnswer();
-    setState(() {
-      if (correctAnswer == answer) {
-        scoreKeeper.add(
-          Icon(
-            Icons.check,
-            color: Colors.green,
-          ),
-        );
-      } else {
-        scoreKeeper.add(
-          Icon(
-            Icons.close,
-            color: Colors.red,
-          ),
-        );
-      }
-      quizBrain.nextQuestion();
-    });
+    if (!quizBrain.isFinished()) {
+      bool correctAnswer = quizBrain.getQuestionAnswer();
+      setState(() {
+        if (correctAnswer == answer) {
+          scoreKeeper.add(
+            Icon(
+              Icons.check,
+              color: Colors.green,
+            ),
+          );
+        } else {
+          scoreKeeper.add(
+            Icon(
+              Icons.close,
+              color: Colors.red,
+            ),
+          );
+        }
+        quizBrain.nextQuestion();
+      });
+    } else {
+      quizBrain.reset();
+      setState(() {
+        scoreKeeper.clear();
+      });
+      Alert(
+              context: context,
+              style: alertStyle,
+              title: "End of Quiz",
+              desc: "That's all folks")
+          .show();
+    }
   }
 
   @override
